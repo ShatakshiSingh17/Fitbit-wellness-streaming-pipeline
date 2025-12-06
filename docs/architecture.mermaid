@@ -1,0 +1,21 @@
+graph LR
+    subgraph Ingestion
+        CSV[Fitbit CSVs] -->|Producer| Kafka[Kafka Topic: fitbit_wellness_stream]
+    end
+
+    subgraph ETL_Processing [Spark Structured Streaming]
+        Kafka -->|Read| Bronze[Bronze Layer: Raw Events]
+        Bronze -->|Clean/Validate| Silver[Silver Layer: Cleaned Data]
+        Silver -->|Aggregate| Gold[Gold Layer: Star Schema & KPIs]
+    end
+
+    subgraph Storage [Data Lake / Warehouse]
+        Bronze -->|Parquet| S3_Bronze[(Data/Bronze)]
+        Silver -->|Parquet| S3_Silver[(Data/Silver)]
+        Gold -->|Parquet| S3_Gold[(Data/Gold)]
+    end
+
+    subgraph Analytics
+        S3_Gold -->|SQL| BI[Power BI / Tableau Dashboard]
+        S3_Silver -->|Pandas| EDA[EDA Notebooks]
+    end
